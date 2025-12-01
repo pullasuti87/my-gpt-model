@@ -1,6 +1,6 @@
 # my_gpt (simple transformerLM)
 
-my attempt to understand language models a little better,
+to understand language models a little better,
 relies heavily on the _Building Transformer Models with Attention_ book
 a_nd _Andrej Karpathy's_ transformer implementations
 
