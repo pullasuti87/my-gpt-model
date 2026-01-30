@@ -8,13 +8,11 @@ a_nd _Andrej Karpathy's_ transformer implementations
 - multi-head attention
 - position embeddings
 - tiktoken
-- uses data.txt -> using finnish text
+- uses data.txt as training -> suomi text
 
-## needs
-
-- python3
-- pytorch
-- tiktoken
+## todo 
+- no optimizer 
+- tests 
 
 [check out](notes.md)
 
