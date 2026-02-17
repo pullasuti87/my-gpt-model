@@ -1,5 +1,5 @@
 import torch
-from config import enc, context_length, batch_size, device
+from config import enc, context_length, batch_size, device, learning_rate
 from model import GPTModel
 
 with open("data.txt", "r", encoding="utf-8") as file:
@@ -42,3 +42,13 @@ print("inputs shape:", x.shape)
 print("targets shape:", y.shape)
 print("input id:", x[0].tolist())
 print("target id:", y[0].tolist())
+
+model = GPTModel()
+model = model.to(device) 
+
+optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate)
+
+# predictions and how big is the loss
+logits, loss = model(x, y)
+
+print("\nloss: ", loss.item())

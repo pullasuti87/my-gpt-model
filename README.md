@@ -9,7 +9,6 @@ a_nd _Andrej Karpathy's_ transformer implementations
 - tiktoken
 
 ## todo 
-- no optimizer 
 - tests 
 
 

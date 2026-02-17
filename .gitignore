@@ -47,3 +47,5 @@ coverage/
 # vim session
 .vim
 
+# other
+.notes.md
