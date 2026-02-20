@@ -44,22 +44,24 @@ class Head(torch.nn.Module):
 
 class MultiHead(torch.nn.Module):
 
-    def __init__(self, n, size):
+    def __init__(self, num_heads, head_size):
         super().__init__()
 
         # list of heads
         self.heads = torch.nn.ModuleList()
-        for _ in range(n):
-            self.heads.append(Head(size))
+        for _ in range(num_heads):
+            self.heads.append(Head(head_size))
+
+        n_embd = num_heads * head_size
 
         # final projection
-        self.proj = torch.nn.Linear(embedding_dimension, embedding_dimension)
+        self.proj = torch.nn.Linear(n_embd, n_embd)
 
     def forward(self, x):
 
         t = []
-        for i in self.heads:
-            a = i(x)
+        for h in self.heads:
+            a = h(x)
             t.append(a)
 
         combine = torch.cat(t, dim=-1)
@@ -68,3 +70,38 @@ class MultiHead(torch.nn.Module):
         result = self.proj(combine)
 
         return result
+
+
+class FeedForward(torch.nn.Module):
+
+    def __init__(self, embedding_dim):
+        super().__init__()
+        self.net = torch.nn.Sequential(
+            # 4 orginal paper value
+            torch.nn.Linear(embedding_dim, 4 * embedding_dim),
+            torch.nn.ReLU(),
+            torch.nn.Linear(4 * embedding_dim, embedding_dim),
+        )
+
+    def forward(self, x):
+        return self.net(x)
+
+
+class Block(torch.nn.Module):
+
+    def __init__(self, n_embd, n_head):
+        super().__init__()
+
+        head_size = int(n_embd / n_head)
+
+        # self attention
+        self.sa = MultiHead(n_head, head_size)
+        self.ffwd = FeedForward(n_embd)
+        self.ln1 = torch.nn.LayerNorm(n_embd)
+        self.ln2 = torch.nn.LayerNorm(n_embd)
+
+    def forward(self, x):
+
+        x = x + self.sa(self.ln1(x))
+        x = x + self.ffwd(self.ln2(x))
+        return x
