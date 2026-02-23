@@ -1,6 +1,5 @@
 import torch
 import torch.nn
-from torch.nn import functional as F
 from config import *
 
 
@@ -19,6 +18,7 @@ class Head(torch.nn.Module):
             torch.ones(context_length, context_length)))
 
     def forward(self, x):
+        # tokens, dimensions
         _, T, C = x.shape
 
         k = self.key(x)
@@ -34,7 +34,7 @@ class Head(torch.nn.Module):
         scores = scores.masked_fill(mask == 0, float('-inf'))
 
         #  scores to probabilities
-        weights = F.softmax(scores, dim=-1)
+        weights = torch.nn.functional.softmax(scores, dim=-1)
 
         # combine values
         result = torch.matmul(weights, v)
@@ -105,3 +105,46 @@ class Block(torch.nn.Module):
         x = x + self.sa(self.ln1(x))
         x = x + self.ffwd(self.ln2(x))
         return x
+
+
+class GPT(torch.nn.Module):
+
+    def __init__(self):
+        super().__init__()
+        # content
+        self.token_table = torch.nn.Embedding(
+            vocab_size, embedding_dimension)
+
+        # location
+        self.position_table = torch.nn.Embedding(
+            context_length, embedding_dimension)
+
+        # blocks
+        blocks = []
+        for _ in range(n_transformer_layers):
+            blocks.append(
+                Block(embedding_dimension, n_attention_heads)
+            )
+        self.blocks = torch.nn.Sequential(*blocks)
+
+        # 4. final layernorm, projection to vocabulary size
+        self.ln_f = torch.nn.LayerNorm(embedding_dimension)
+        self.lm_head = torch.nn.Linear(
+            embedding_dimension, vocab_size)
+
+
+def main():
+
+   # config
+    x = torch.randn(batch_size, context_length, embedding_dimension)
+    print("input shape: ", x.shape)
+
+    block = Block(embedding_dimension, n_attention_heads).to(device)
+    out = block(x)
+    print("out.shape: ", out.shape)
+
+    assert x.shape == out.shape
+
+
+if __name__ == "__main__":
+    main()
